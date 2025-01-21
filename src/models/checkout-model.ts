@@ -10,7 +10,7 @@ export class CheckoutModel extends BaseModel {
      * @returns The checkout
      */
     async getCheckout(id: string) {
-        const dbCheckout = await this.db.select().from(checkout).where(eq(checkout.id, id))
+        const dbCheckout = await this.db.select().from(checkout).where(eq(checkout.id, id)).then(res => res[0])
         return dbCheckout
     }
 }

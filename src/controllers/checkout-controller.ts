@@ -1,16 +1,19 @@
-
-import { Hono } from 'hono'
+import type { HonoContext } from '../types'
 import { CheckoutModel } from '../models/checkout-model'
-import { drizzle } from 'drizzle-orm/postgres-js'
-import type { Env, Variables } from '../types'
+import type { drizzle } from 'drizzle-orm/postgres-js'
 
-const checkoutController = new Hono<{ Bindings: Env, Variables: Variables }>()
+export class CheckoutController {
 
-checkoutController.get('/:id', async (c) => {
-    const db = c.get('db') as ReturnType<typeof drizzle>
-    const checkoutModel = new CheckoutModel(db)
-    const checkout = await checkoutModel.getCheckout(c.req.param('id'))
-    return c.json(checkout)
-})
-
-export default checkoutController
+    /**
+     * Get a checkout by its id
+     * @param c - The Hono context
+     * @returns The checkout
+     */
+    static async getCheckout(c: HonoContext) {
+        const db = c.get('db') as ReturnType<typeof drizzle>
+        const checkoutModel = new CheckoutModel(db)
+        const dbCheckout = await checkoutModel.getCheckout(c.req.param('id'))
+        if (!dbCheckout) return c.json({ error: 'Checkout not found' }, 404)
+        return dbCheckout
+    }
+}
