@@ -1,4 +1,5 @@
 import { SelectCheckout } from "../db/schema";
+import { formatPriceToString } from "../lib/utils";
 
 
 export async function checkoutHTML(dbCheckout: SelectCheckout) {
@@ -9,14 +10,14 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
             <!-- Product Information -->
             <div>
                 <h2 id="product-name">${dbCheckout.productName}</h2>
-                <p id="product-price">$${dbCheckout.productPrice}</p>
-                <img src="https://eewvmilsxsdrbeekjzwn.supabase.co/storage/v1/object/public/scaloor-bucket/${dbCheckout.thumbnail}"
-                    alt="Product Name" width="200" height="200" class="product-image">
+                <p id="product-price">$${formatPriceToString(dbCheckout.productPrice)}</p>
+                ${dbCheckout.thumbnail ? `<img src="https://eewvmilsxsdrbeekjzwn.supabase.co/storage/v1/object/public/scaloor-bucket/${dbCheckout.thumbnail}"
+                    alt="Product Name" width="200" height="200" class="product-image">` : ''}
             </div>
 
             <!-- Product Description -->
             <div class="description">
-                <p id="product-description">Product description goes here</p>
+                <p id="product-description">${dbCheckout.productDescription}</p>
             </div>
 
             <!-- Customer Information -->
@@ -37,27 +38,26 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
         </form>
     </section>
     <style>
+        /* Load font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
         /* Define CSS variables inline */
         :root {
-            --background: 0 0% 100%;
-            --primary: 222.2 84% 4.9%;
-            --foreground: 222.2 84% 4.9%;
-            --muted-foreground: 215.4 16.3% 46.9%;
-            --input: 214.3 31.8% 91.4%;
-            --ring: 222.2 84% 4.9%;
-            --border: 214.3 31.8% 91.4%;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --background: 250 100% 99%;
+            --foreground: 250 50% 10%;
+            --primary: 250 95% 65%;
+            --primary-foreground: 250 100% 100%;
+            --muted-foreground: 250 20% 40%;
+            --input: 250 30% 90%;
+            --ring: 250 95% 65%;
+            --border: 250 30% 90%;
+            --radius: 0.5rem;
         }
 
-        /* Dark mode support */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --background: 222.2 84% 4.9%;
-                --foreground: 210 40% 98%;
-                --muted-foreground: 215 20.2% 65.1%;
-                --input: 217.2 32.6% 17.5%;
-                --ring: 212.7 26.8% 83.9%;
-                --border: 217.2 32.6% 17.5%;
-            }
+        /* Apply font only to checkout form */
+        .checkout-form {
+            font-family: var(--font-sans);
         }
 
         .checkout-form {
@@ -76,17 +76,20 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
         }
 
         .input {
-            height: 2.5rem;
+            display: flex;
+            height: 2rem;
             width: 100%;
-            border-radius: 0.375rem;
+            border-radius: var(--radius);
             border: 1px solid hsl(var(--border));
             background-color: hsl(var(--background));
-            color: hsl(var(--foreground));
             padding: 0.5rem 0.75rem;
             font-size: 1rem;
-            line-height: 1.5;
-            transition: box-shadow 0.2s ease;
+            line-height: 1;
+            color: hsl(var(--foreground));
+            transition: all 0.2s ease;
         }
+
+        
 
         .input::placeholder {
             color: hsl(var(--muted-foreground));
@@ -94,9 +97,9 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
 
         .input:focus-visible {
             outline: none;
-            border: none;
-            box-shadow: 0 0 0 2px hsl(var(--background)),
-                0 0 0 4px hsl(var(--ring));
+            ring-offset: 2px;
+            box-shadow: 0 0 0 2px hsl(var(--ring)),
+                       0 0 0 4px hsl(var(--background));
         }
 
         .input:disabled {
@@ -120,11 +123,15 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
         .button {
             display: inline-flex;
             text-color: hsl(var(--primary-foreground));
+            cursor: pointer;
+            pointer-events: auto;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
             white-space: nowrap;
-            border-radius: 0.375rem;
+            border-radius: var(--radius);
+            border: none;
+            font-family: 'Inter', system-ui, sans-serif;
             font-size: 0.875rem;
             font-weight: 500;
             height: 2.5rem;
@@ -132,10 +139,6 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
             transition-property: color, background-color;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 150ms;
-        }
-
-        /* Default variant */
-        .button {
             background-color: hsl(var(--primary));
             color: hsl(var(--primary-foreground));
         }
@@ -156,14 +159,7 @@ export async function checkoutHTML(dbCheckout: SelectCheckout) {
             pointer-events: none;
             opacity: 0.5;
         }
-
-        /* SVG icons inside buttons */
-        .button svg {
-            pointer-events: none;
-            width: 1rem;
-            height: 1rem;
-            flex-shrink: 0;
-        }
+        
 
         .description {
             width: fit-content;
