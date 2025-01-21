@@ -1,24 +1,19 @@
+import { checkout } from './db/schema'
+import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
+import { Env, Variables } from './types'
+import { injectDb, cors } from './middleware'
 
-const app = new Hono()
+const app = new Hono<{ Bindings: Env, Variables: Variables }>()
 
-// Add CORS middleware
-app.use('*', async (c, next) => {
-  // Add CORS headers
-  c.header('Access-Control-Allow-Origin', '*')
-  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  c.header('Access-Control-Allow-Headers', 'Content-Type')
-  
-  // Handle OPTIONS request
-  if (c.req.method === 'OPTIONS') {
-    return c.text('')
-  }
-  
-  await next()
-})
+// Apply middleware
+app.use('*', injectDb)
+app.use('*', cors)
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
+app.get('/', async (c) => {
+  const db = c.get('db')
+  const dbCheckout = await db.select().from(checkout).where(eq(checkout.id, 'chk_a8aaosw7fd6xpa9iimitwdy0'))
+  return c.text(`${JSON.stringify(dbCheckout)}`)
 })
 
 export default app
